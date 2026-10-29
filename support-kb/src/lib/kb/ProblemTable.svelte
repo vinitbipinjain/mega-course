@@ -11,6 +11,7 @@
       .map(([k, v]) => `${k} ×${v}`)
       .join(' · ');
   const info = (p: Problem | 'unplaced') => (p === 'unplaced' ? null : PROBLEM_INFO[p]);
+  const twice = $derived(split.groups.filter((g) => g.problem !== 'one-day-move').reduce((n, g) => n + g.oneDayMoves, 0));
 </script>
 
 <p class="sum">
@@ -20,6 +21,9 @@
   {#if split.rows !== split.merged.length}
     <span class="muted">({split.rows} rows in the export; {split.rows - split.merged.length} came twice and count once)</span>
   {/if}
+     {#if twice}
+       <br /><span class="muted">Counted the desk's way: a report counts where it is filed. {twice} of them were read as one-day moves and also count under <code>one-day-move</code>.</span>
+     {/if}
 </p>
 
 <table>
@@ -31,7 +35,7 @@
       {@const t = ticketFor(g.problem)}
       <tr>
         <td><code>{g.problem}</code></td>
-        <td class="n">{g.reports.length}</td>
+        <td class="n">{g.reports.length}{#if g.oneDayMoves && g.problem !== 'one-day-move'}<span class="muted"> (incl. {g.oneDayMoves} one-day moves)</span>{/if}</td>
         <td>{info(g.problem)?.symptom ?? 'no tenant on file'}</td>
         <td>{g.tenants.length}</td>
         <td class="muted">{list(g.channels)}</td>

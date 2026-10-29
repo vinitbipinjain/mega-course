@@ -29,8 +29,9 @@ open.
 
 <ProblemTable ticket={4471} />
 
-Every number here comes from `reports-4471.json` at render time, through `problems.ts`. The export
-has some reports twice; one id counts once.
+Every number here comes from `reports-4471.json` at render time, through `problems.ts`, counted the
+way the desk's own view counts: a report counts where `causes.ts` files it. The export has some
+reports twice; one id counts once.
 
 ### parser · <ProblemCount ticket={4471} problem="parser" of="link" />
 
@@ -51,9 +52,9 @@ tenants) land here, whatever intake tagged them.
 
 These dates are not swapped. They move by one day: Tuesday 6 October shows as Monday, a client in
 Lisbon gets Tuesday while Toronto gets Monday, an invite arrives before the booking was made. The
-desk already read them this way (`desk-notes.json`), but `CauseTable` files them under `parser` by
-tenant and footnotes them. That points at time zone handling, not the parser, so they need their own
-ticket.
+desk already read them this way (`desk-notes.json`), and `CauseTable` footnotes them under `parser`,
+where they are filed and still counted. That points at time zone handling, not the parser, so they
+need their own ticket. They count there too.
 
 ## Why one ticket hid three
 
@@ -69,7 +70,7 @@ depends on the tenant and the way the report came in (see the "intake tagged" co
 
 - Engineering: three tickets, three fixes. Close each on its own.
 - Desk: while #4471 stays merged, new reports go to the ticket of their problem, not to #4471.
-  Use `problemOf` in `src/lib/kb/problems.ts`; a matching subject line is not enough.
+  Use `problemsOf` in `src/lib/kb/problems.ts`; a matching subject line is not enough.
 - #4471's page still says "one issue". Leave it to its owner; this page is the split.
 
 <RenderStamp {signature} />
