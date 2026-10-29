@@ -1,0 +1,75 @@
+---
+layout: runbook
+title: '#4471 holds three problems'
+owner: vinit
+status: open
+reviewed: 2026-10-29
+signature: 'v1.eyJzdWIiOiIyNjk4IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMyNTI5NzQsImV4cCI6MTc5MzMzOTM3NH0.11eod50oHXoa_TmvFgazRLxgccv-U4kq2XW1jf6hQmk'
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import ProblemCount from '#lib/kb/ProblemCount.svelte';
+  import SubjectSpread from '#lib/kb/SubjectSpread.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+[#4471](/kb/incidents/4471) is marked known: one issue, one parser fix queued. Its <ProblemCount ticket={4471} />
+reports hold <ProblemCount ticket={4471} of="problems" /> problems. The queued fix closes one of them.
+Each problem now has its own ticket.
+
+<Callout kind="warn">
+The parser fix does not close #4471. After it ships, <ProblemCount ticket={4471} problem="hint" /> reports
+from the booking-v3 form and <ProblemCount ticket={4471} problem="one-day-move" /> one-day moves are still
+open.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} />
+
+Every number here comes from `reports-4471.json` at render time, through `problems.ts`. The export
+has some reports twice; one id counts once.
+
+### parser · <ProblemCount ticket={4471} problem="parser" of="link" />
+
+The shared parser reads every date month first. All our tenants write the day first, so any date
+with a day of 12 or less comes out with day and month swapped: 7 April goes out as 4 July. This is
+the bug #4471 was opened for, and the queued fix. It reaches <ProblemCount ticket={4471} problem="parser" of="tenants" />
+tenants through the app, email and the booking-v2 form.
+
+### hint · <ProblemCount ticket={4471} problem="hint" of="link" />
+
+The booking-v3 form prints `MM/DD/YYYY` under its date field. People type what the hint tells them,
+month first, and the form reads the field the tenant's way, day first. The symptom is the same swap,
+so the reports look like the parser bug, but the fix is in the form. A parser fix does not touch it.
+Only form reports from booking-v3 tenants (<ProblemCount ticket={4471} problem="hint" of="tenants" />
+tenants) land here, whatever intake tagged them.
+
+### one-day-move · <ProblemCount ticket={4471} problem="one-day-move" of="link" />
+
+These dates are not swapped. They move by one day: Tuesday 6 October shows as Monday, a client in
+Lisbon gets Tuesday while Toronto gets Monday, an invite arrives before the booking was made. The
+desk already read them this way (`desk-notes.json`), but `CauseTable` files them under `parser` by
+tenant and footnotes them. That points at time zone handling, not the parser, so they need their own
+ticket.
+
+## Why one ticket hid three
+
+[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges reports whose subject lines match.
+A subject line says what the reporter saw, not why it happened:
+
+<SubjectSpread ticket={4471} />
+
+Intake's tag does not split them either. It is a guess from the reporter's browser; the problem
+depends on the tenant and the way the report came in (see the "intake tagged" column above).
+
+## What changes
+
+- Engineering: three tickets, three fixes. Close each on its own.
+- Desk: while #4471 stays merged, new reports go to the ticket of their problem, not to #4471.
+  Use `problemOf` in `src/lib/kb/problems.ts`; a matching subject line is not enough.
+- #4471's page still says "one issue". Leave it to its owner; this page is the split.
+
+<RenderStamp {signature} />
